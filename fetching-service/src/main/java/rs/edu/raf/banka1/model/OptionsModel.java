@@ -7,7 +7,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-public class OptionsModel {
+public class OptionsModel extends ListingBase {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

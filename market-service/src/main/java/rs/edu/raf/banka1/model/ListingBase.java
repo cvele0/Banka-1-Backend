@@ -44,5 +44,4 @@ public class ListingBase implements Serializable {
 
     @Column
     private Integer volume;
-
 }

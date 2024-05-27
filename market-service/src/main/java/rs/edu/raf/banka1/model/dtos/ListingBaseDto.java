@@ -18,5 +18,4 @@ public class ListingBaseDto {
     private Double low;
     private Double priceChange;
     private Integer volume;
-
 }

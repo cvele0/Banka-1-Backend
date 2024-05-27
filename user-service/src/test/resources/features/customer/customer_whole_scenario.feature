@@ -15,6 +15,22 @@ Feature: employee can register, view and eidt customer, and customer can activat
     When user calls POST on "/customer/createNewCustomer"
     Then response should be true
 
+  Scenario: employee creates new customer and bank account for customer (no permission)
+    Given i am logging in with email "client@admin.com" and password "client"
+    And customer has first name "Petar"
+    And customer has last name "Petrovic"
+    And customer has date of birth of "11-09-2001"
+    And customer has address "Bulevar Kralja Aleksandra 73"
+    And customer has phone number "0651234567"
+    And customer has email "petarpetrovic@gmail.rs"
+    And customer has jmbg "1508213802838"
+    And customer is male
+    And accountType is "CURRENT"
+    And account currency is "TST"
+    And maintenance cost is "1000"
+    When user calls POST on "/customer/createNewCustomer"
+    Then i should get loggingResponse with status 401
+
   Scenario: employee confirms his info
     Given customer has email "petarpetrovic@gmail.rs"
     And customer got his bank account from email

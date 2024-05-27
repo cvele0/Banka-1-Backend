@@ -58,6 +58,11 @@ public class MarketServiceImpl implements MarketService {
     }
 
     @Override
+    public ListingOptionsDto getOptionsById(Long optionsId) {
+        return Retry.decorateSupplier(serviceRetry, () -> getOptionsByIdFromMarket(optionsId)).get();
+    }
+
+    @Override
     public WorkingHoursStatus getWorkingHoursForStock(Long stockId) {
         try {
             // Create header with JWT token
@@ -148,13 +153,46 @@ public class MarketServiceImpl implements MarketService {
             }
         }catch(HttpClientErrorException e){
             if(e.getStatusCode().equals(HttpStatus.NOT_FOUND)){
-                System.out.println("Stock not found: getStockByIdFromMarket");
+                System.out.println("Forex not found: getForexByIdFromMarket");
             }
             if(e.getStatusCode().equals(HttpStatus.BAD_REQUEST)){
-                System.out.println("Bad request: getStockByIdFromMarket");
+                System.out.println("Bad request: getForexByIdFromMarket");
             }
         }catch (Exception e){
-            System.out.println("Error: getStockByIdFromMarket");
+            System.out.println("Error: getForexByIdFromMarket");
+        }
+        return null;
+    }
+
+    public ListingOptionsDto getOptionsByIdFromMarket(Long optionsId) {
+
+        try {
+            // Create header with JWT token
+            HttpEntity<?> httpEntity = createHeader();
+
+            ResponseEntity<ListingOptionsDto> response = marketServiceRestTemplate.exchange(
+                    "market/listing/options/" + optionsId,
+                    HttpMethod.GET,
+                    httpEntity,
+                    ListingOptionsDto.class
+            );
+            System.out.println(response.getBody());
+            if (response.getStatusCode().is2xxSuccessful()) {
+                return response.getBody();
+            } else {
+                // Log the unsuccessful response status code
+                System.out.println("Unsuccessful response status code: " + response.getStatusCode());
+                return null;
+            }
+        }catch(HttpClientErrorException e){
+            if(e.getStatusCode().equals(HttpStatus.NOT_FOUND)){
+                System.out.println("Option not found: getOptionsByIdFromMarket");
+            }
+            if(e.getStatusCode().equals(HttpStatus.BAD_REQUEST)){
+                System.out.println("Bad request: getOptionsByIdFromMarket");
+            }
+        }catch (Exception e){
+            System.out.println("Error: getOptionsByIdFromMarket");
         }
         return null;
     }
@@ -181,13 +219,13 @@ public class MarketServiceImpl implements MarketService {
             }
         }catch(HttpClientErrorException e){
             if(e.getStatusCode().equals(HttpStatus.NOT_FOUND)){
-                System.out.println("Stock not found: getStockByIdFromMarket");
+                System.out.println("Future not found: getFutureByIdFromMarket");
             }
             if(e.getStatusCode().equals(HttpStatus.BAD_REQUEST)){
-                System.out.println("Bad request: getStockByIdFromMarket");
+                System.out.println("Bad request: getFutureByIdFromMarket");
             }
         }catch (Exception e){
-            System.out.println("Error: getStockByIdFromMarket");
+            System.out.println("Error: getFutureByIdFromMarket");
         }
         return null;
     }

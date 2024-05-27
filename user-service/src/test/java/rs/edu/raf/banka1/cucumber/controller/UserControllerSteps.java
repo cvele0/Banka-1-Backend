@@ -76,6 +76,7 @@ public class UserControllerSteps {
     private CardRepository cardRepository;
     private LoanRepository loanRepository;
 
+    private ResponseEntity<LoginResponse> loggingResponse;
 
 
     private String jwt = "";
@@ -500,6 +501,18 @@ public class UserControllerSteps {
         HttpEntity<LoginRequest> entity = new HttpEntity<>(loginRequest);
         ResponseEntity<LoginResponse> responseEntity = new RestTemplate().postForEntity(url + port + "/auth/login/employee", entity, LoginResponse.class);
         jwt = responseEntity.getBody().getJwt();
+    }
+
+    @Given("i am logging in with email {string} and password {string}")
+    public void iAmLoggingIn(String email, String password) {
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail(email);
+        loginRequest.setPassword(password);
+
+        HttpEntity<LoginRequest> entity = new HttpEntity<>(loginRequest);
+        ResponseEntity<LoginResponse> responseEntity = new RestTemplate().postForEntity(url + port + "/auth/login/employee", entity, LoginResponse.class);
+//        jwt = responseEntity.getBody().getJwt();
+        loggingResponse = responseEntity;
     }
 
     @Given("customer is logged in with email {string} and password {string}")
@@ -1400,6 +1413,11 @@ public class UserControllerSteps {
     @Then("i should get response with status {int}")
     public void iShouldGetResponseWithStatus(int status) {
         assertThat(lastResponse.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.valueOf(status));
+    }
+
+    @Then("i should get loggingResponse with status {int}")
+    public void iShouldGetLoggingResponseWithStatus(int status) {
+        assertThat(loggingResponse.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.valueOf(status));
     }
 
     @Given("customer has first name {string}")

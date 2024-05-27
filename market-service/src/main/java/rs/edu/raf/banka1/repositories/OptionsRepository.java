@@ -13,10 +13,10 @@ import java.util.Optional;
 @Repository
 public interface OptionsRepository extends JpaRepository<OptionsModel, Long> {
     Optional<List<OptionsModel>> findByTicker(String ticker);
+    Optional<List<OptionsModel>> findByExpirationDate(Long expirationDate);
 
     @Transactional
     @Modifying
     @Query(value = "TRUNCATE TABLE options_model",nativeQuery = true)
     void truncateTable();
-
 }

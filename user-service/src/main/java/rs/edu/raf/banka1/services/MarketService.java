@@ -8,11 +8,18 @@ import java.util.List;
 
 public interface MarketService {
     List<ListingStockDto> getAllStocks();
-    List<ListingFutureDto> getAllFutures();
-    List<ListingForexDto> getAllForex();
-    ListingStockDto getStockById(Long stockId);
-    ListingFutureDto getFutureById(Long futureId);
-    ListingForexDto getForexById(Long forexId);
-    WorkingHoursStatus getWorkingHoursForStock(Long stockId);
 
+    List<ListingFutureDto> getAllFutures();
+
+    List<ListingForexDto> getAllForex();
+
+    ListingStockDto getStockById(Long stockId);
+
+    ListingFutureDto getFutureById(Long futureId);
+
+    ListingForexDto getForexById(Long forexId);
+
+    ListingOptionsDto getOptionsById(Long optionsId);
+
+    WorkingHoursStatus getWorkingHoursForStock(Long stockId);
 }

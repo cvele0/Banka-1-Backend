@@ -1,14 +1,10 @@
 package rs.edu.raf.banka1.mapper;
 
 import org.springframework.stereotype.Component;
-import rs.edu.raf.banka1.model.ListingForex;
 import rs.edu.raf.banka1.model.ListingFuture;
-import rs.edu.raf.banka1.model.ListingStock;
-import rs.edu.raf.banka1.model.OptionsModel;
 import rs.edu.raf.banka1.model.dtos.ListingBaseDto;
-import rs.edu.raf.banka1.model.dtos.ListingForexDto;
 import rs.edu.raf.banka1.model.dtos.ListingFutureDto;
-import rs.edu.raf.banka1.model.dtos.OptionsDto;
+
 @Component
 public class FutureMapper {
     public ListingFuture updateFuture(ListingFuture oldFuture, ListingFuture newFuture) {

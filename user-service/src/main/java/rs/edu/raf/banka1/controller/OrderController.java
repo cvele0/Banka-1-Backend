@@ -76,16 +76,16 @@ public class OrderController {
                     @Parameter(name = "Authorization", description = "JWT token", required = true, in = ParameterIn.HEADER)
             })
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Successful operation",
-            content = {@Content(mediaType = "application/json")}),
-        @ApiResponse(responseCode = "403", description = "You aren't authorized to create order request"),
-        @ApiResponse(responseCode = "404", description = "Bad Request"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
+            @ApiResponse(responseCode = "200", description = "Successful operation",
+                    content = {@Content(mediaType = "application/json")}),
+            @ApiResponse(responseCode = "403", description = "You aren't authorized to create order request"),
+            @ApiResponse(responseCode = "404", description = "Bad Request"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<Boolean> createOrder(
             @RequestBody final CreateOrderRequest request,
             @AuthenticationPrincipal User userPrincipal
-            ) {
+    ) {
         Employee currentAuth = employeeService.getEmployeeEntityByEmail(userPrincipal.getUsername());
         orderService.createOrder(request, currentAuth);
         return new ResponseEntity<>(true, HttpStatus.OK);

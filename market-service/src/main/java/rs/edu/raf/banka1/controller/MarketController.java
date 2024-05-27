@@ -19,26 +19,14 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
-import rs.edu.raf.banka1.mapper.ForexMapper;
-import rs.edu.raf.banka1.mapper.FutureMapper;
-import rs.edu.raf.banka1.mapper.ListingHistoryMapper;
-import rs.edu.raf.banka1.mapper.StockMapper;
-import rs.edu.raf.banka1.model.ListingForex;
-import rs.edu.raf.banka1.model.ListingFuture;
-import rs.edu.raf.banka1.model.ListingHistory;
-import rs.edu.raf.banka1.model.ListingStock;
-import rs.edu.raf.banka1.model.dtos.ExchangeDto;
-import rs.edu.raf.banka1.model.dtos.ListingBaseDto;
-import rs.edu.raf.banka1.model.dtos.ListingForexDto;
-import rs.edu.raf.banka1.model.dtos.ListingFutureDto;
-import rs.edu.raf.banka1.model.dtos.ListingHistoryDto;
-import rs.edu.raf.banka1.model.dtos.ListingStockDto;
-import rs.edu.raf.banka1.services.ExchangeService;
-import rs.edu.raf.banka1.services.ForexService;
-import rs.edu.raf.banka1.services.FuturesService;
-import rs.edu.raf.banka1.services.ListingStockService;
+import rs.edu.raf.banka1.mapper.*;
+import rs.edu.raf.banka1.model.*;
+import rs.edu.raf.banka1.model.dtos.*;
+import rs.edu.raf.banka1.services.*;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/market")
@@ -52,15 +40,20 @@ public class MarketController {
     private final ExchangeService exchangeService;
     private final ForexService forexService;
     private final FuturesService futuresService;
+    private final OptionsService optionsService;
+
     private final ListingStockService listingStockService;
     private final ListingHistoryMapper listingHistoryMapper;
     private final ForexMapper forexMapper;
     private final StockMapper stockMapper;
     private final FutureMapper futureMapper;
+    private final OptionsMapper optionsMapper;
 
     @Autowired
-    public MarketController(ExchangeService exchangeService, ForexService forexService, ListingStockService listingStockService, FuturesService futuresService,
-                            ListingHistoryMapper listingHistoryMapper, ForexMapper forexMapper, StockMapper stockMapper, FutureMapper futureMapper) {
+    public MarketController(ExchangeService exchangeService, ForexService forexService,
+                            ListingStockService listingStockService, FuturesService futuresService,
+                            ListingHistoryMapper listingHistoryMapper, ForexMapper forexMapper,
+                            StockMapper stockMapper, FutureMapper futureMapper, OptionsService optionsService, OptionsMapper optionsMapper) {
         this.exchangeService = exchangeService;
         this.forexService = forexService;
         this.listingStockService = listingStockService;
@@ -69,6 +62,8 @@ public class MarketController {
         this.forexMapper = forexMapper;
         this.stockMapper = stockMapper;
         this.futureMapper = futureMapper;
+        this.optionsService = optionsService;
+        this.optionsMapper = optionsMapper;
     }
 
     @GetMapping(value = "/exchange", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -119,11 +114,6 @@ public class MarketController {
     })
     public ResponseEntity<List<ListingBaseDto>> getAllListings() {
         List<ListingBaseDto> l1 = forexService.getAllForexes().stream().map(forexMapper::forexToListingBaseDto).toList();
-//        uncomment this when merging for sprint-2
-//        l1.addAll(stockService.getAllStocks().stream().map(stockMapper::stockToListingBaseDto).toList());
-//        uncomment this in some other sprint
-//        l1.addAll(futuresService.getAllFutures().stream().map(futuresMapper::futuresToListingBaseDto).toList());
-
         return new ResponseEntity<>(l1, HttpStatus.OK);
     }
 
@@ -150,11 +140,12 @@ public class MarketController {
         }
         else if(listingType.equalsIgnoreCase("futures")) {
             return new ResponseEntity<>(this.futuresService.getAllFutures().stream().map(futureMapper::toDto), HttpStatus.OK);
+        } else if(listingType.equalsIgnoreCase("options")) {
+            return new ResponseEntity<>(this.optionsService.getAllOptions().stream().map(optionsMapper::toDto), HttpStatus.OK);
         }
         else {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-
     }
 
     @GetMapping(value = "/listing/history/stock/{stockId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -328,5 +319,74 @@ public class MarketController {
     }
 
 
+    ///// OPTIONS /////
 
+    @GetMapping(value = "/listing/options/{optionId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get option by id", description = "Returns option by id",
+            parameters = {
+                    @Parameter(name = "Authorization", description = "JWT token", required = true, in = ParameterIn.HEADER)
+            })
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Successful operation",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ListingOptionsDto.class))}),
+            @ApiResponse(responseCode = "404", description = "Option not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<ListingOptionsDto> getOptionsById(@PathVariable Long optionId) {
+        OptionsModel option = optionsService.findById(optionId).orElse(null);
+        if (option == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        ListingOptionsDto listingOptionsDto = optionsMapper.toDto(option);
+        return new ResponseEntity<>(listingOptionsDto, HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/listing/options", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get options", description = "Returns options",
+            parameters = {
+                    @Parameter(name = "Authorization", description = "JWT token", required = true, in = ParameterIn.HEADER)
+            })
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Successful operation",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ListingOptionsDto.class))}),
+            @ApiResponse(responseCode = "404", description = "Option not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<List<ListingOptionsDto>> getOptions() {
+        List<OptionsModel> option = optionsService.getAllOptions();
+        if (option == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        // Use Stream to map ListingOptions to OptionsDto and collect to a list
+        List<ListingOptionsDto> listingOptionsDtoList = option.stream()
+                .map(optionsMapper::toDto)
+                .collect(Collectors.toList());
+
+        return new ResponseEntity<>(listingOptionsDtoList, HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/listing/options/{expirationDate}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get option by expiration date", description = "Returns option by expiration date",
+            parameters = {
+                    @Parameter(name = "Authorization", description = "JWT token", required = true, in = ParameterIn.HEADER)
+            })
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Successful operation",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ListingOptionsDto.class))}),
+            @ApiResponse(responseCode = "404", description = "Option not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<List<ListingOptionsDto>> getOptionsByExpirationDate(@PathVariable Long expirationDate) {
+        List<OptionsModel> options = this.optionsService.findByExpirationDate(expirationDate).orElse(Collections.emptyList());
+        if (options == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        List<ListingOptionsDto> listingOptionsDto = options.stream()
+                .map(optionsMapper::toDto)
+                .collect(Collectors.toList());
+        return new ResponseEntity<>(listingOptionsDto, HttpStatus.OK);
+    }
 }

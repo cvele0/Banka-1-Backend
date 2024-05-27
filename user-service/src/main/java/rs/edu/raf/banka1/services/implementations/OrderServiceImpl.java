@@ -67,16 +67,22 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public void createOrder(final CreateOrderRequest request, final Employee currentAuth) {
+        System.out.println("usao 1");
         final MarketOrder order = orderMapper.requestToMarketOrder(request, currentAuth);
         if(order.getContractSize() <= 0) throw new InvalidOrderListingAmountException();
         ListingBaseDto listingBaseDto = getListingByOrder(order);
+        System.out.println("Usao 2");
 
         if(listingBaseDto == null) throw new OrderListingNotFoundByIdException(order.getListingId());
+
+        System.out.println("Usao 3");
 
         order.setPrice(calculatePrice(order,listingBaseDto,order.getContractSize()));
         order.setFee(calculateFee(request.getLimitValue(), order.getPrice()));
         order.setOwner(currentAuth);
         order.setProcessedNumber(0L);
+
+        System.out.println("Usao 4");
 
         if(!capitalService.hasEnoughCapitalForOrder(order))
             throw new NotEnoughCapitalAvailableException();
@@ -124,9 +130,10 @@ public class OrderServiceImpl implements OrderService {
             return marketService.getStockById(order.getListingId());
         } else if(order.getListingType().equals(ListingType.FOREX)) {
             return marketService.getForexById(order.getListingId());
+        } else if (order.getListingType().equals(ListingType.OPTIONS)) {
+            return marketService.getOptionsById(order.getListingId());
         }
         return marketService.getFutureById(order.getListingId());
-
     }
 
     @Override
