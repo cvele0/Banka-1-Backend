@@ -13,6 +13,7 @@ import rs.edu.raf.banka1.model.*;
 import rs.edu.raf.banka1.repositories.*;
 import rs.edu.raf.banka1.requests.BankAccountRequest;
 import rs.edu.raf.banka1.requests.CreateBankAccountRequest;
+import rs.edu.raf.banka1.requests.CreateTransferRequest;
 import rs.edu.raf.banka1.services.BankAccountService;
 import rs.edu.raf.banka1.services.CapitalService;
 import rs.edu.raf.banka1.services.EmployeeService;
@@ -96,7 +97,7 @@ public class BootstrapData implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        Logger.info("Loading Data...");
+        //Logger.info("Loading Data...");
 
         seedPermissions();
         seedCurencies();
@@ -245,6 +246,10 @@ public class BootstrapData implements CommandLineRunner {
         bankAccount3.setSubtypeOfAccount("LICNI");
         bankAccountService.saveBankAccount(bankAccount3);
         // dovde
+
+        transferService.processTransfer(transferService.createTransfer(new CreateTransferRequest(bankAccount3.getAccountNumber(), bankAccount2.getAccountNumber(), 100.0)));
+        transferService.processTransfer(transferService.createTransfer(new CreateTransferRequest(bankAccount3.getAccountNumber(), bankAccount1.getAccountNumber(), 100.0)));
+
 
         BankAccountRequest bankAccountRequest = new BankAccountRequest();
         bankAccountRequest.setAccountType(AccountType.FOREIGN_CURRENCY);
